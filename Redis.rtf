@@ -1,0 +1,174 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset1 Segoe UI Symbol;}{\f2\fmodern JetBrains Mono;}}
+{\colortbl ;\red255\green0\blue0;\red0\green176\blue80;\red155\green0\blue211;\red0\green77\blue187;}
+{\*\generator Riched20 10.0.17134}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\cf1\f0\fs40\lang9                                    REDIS\par
+\cf2\f1\fs22\u9989?\f0  1. What is Redis?\cf1\par
+\cf0 1.Redis stands for Remote Dictionary Server.\cf1\par
+\cf0 2.It is an open-source, in-memory data structure store.\par
+3.Can be used as a database, cache, and message broker\cf1 .\par
+\par
+\cf2\f1\u9989?\f0  2. Key Features\par
+\cf0 1.In-memory storage: Extremely fast reads/writes.\par
+2.Persistence options: RDB snapshots, AOF (Append-Only File).\par
+3.Data structures: Strings, Lists, Sets, Hashes, Sorted Sets, Bitmaps, HyperLogLogs, Streams.\par
+4.Pub/Sub support for messaging.\par
+5.Atomic operations.\par
+6.Replication and High Availability via Redis Sentinel and Cluster.\par
+\cf1\fs40\par
+\cf2\f1\fs22\u9989?\f0  3. Support Data Structures\cf1\fs40\par
+
+\pard\ri-720\sa200\sl276\slmult1\cf3\b\fs22 redis type\cf0\b0 :-\par
+
+\pard\sa200\sl276\slmult1\cf4\b\i 1.Strings        (help @string)\cf0\b0\i0\par
+127.0.0.1:6379> set name "lokesh"         (set key value)\par
+OK\par
+127.0.0.1:6379> get name                     (get key)\par
+"lokesh"\par
+127.0.0.1:6379> append name "lokeshkhadse"      (append key newval)\par
+(integer) 18\par
+127.0.0.1:6379> get name\par
+"lokeshlokeshkhadse"\par
+127.0.0.1:6379> incr user_id   (incr key)\par
+(integer) 1\par
+127.0.0.1:6379> incr user_id     \par
+(integer) 2\par
+127.0.0.1:6379> incr user_id\par
+(integer) 3\par
+127.0.0.1:6379> get user_id\par
+"3"\par
+127.0.0.1:6379> decr user_id\par
+(integer) 2\par
+\cf1\fs40\par
+\cf4\b\i\fs22 2.Hashes       (help @Hashes)\par
+\cf0\b0\i0 127.0.0.1:6379> hset student name "loki" age 21\par
+(integer) 2\par
+127.0.0.1:6379> hget student name\par
+"loki"\par
+127.0.0.1:6379> hgetall student\par
+1) "name"\par
+2) "loki"\par
+3) "age"\par
+4) "21"\par
+127.0.0.1:6379> hdel student age\par
+(integer) 1\par
+127.0.0.1:6379> hgetall student\par
+1) "name"\par
+2) "loki"\par
+127.0.0.1:6379> hkeys student\par
+1) "name"\par
+127.0.0.1:6379> hlen student\par
+(integer) 1\par
+\par
+\cf4\b\i 3.list       (help @list)\cf0\b0\i0\par
+127.0.0.1:6379> lpush marks  11 12 13 14 15\par
+(integer) 5\par
+127.0.0.1:6379> llen marks\par
+(integer) 5\par
+127.0.0.1:6379> lrange marks 0 4\par
+1) "15"\par
+2) "14"\par
+3) "13"\par
+4) "12"\par
+5) "11"\par
+127.0.0.1:6379> rpush marks1 30 31 32\par
+(integer) 3\par
+127.0.0.1:6379> llen marks2\par
+(integer) 0\par
+127.0.0.1:6379> llen marks1\par
+(integer) 3\par
+127.0.0.1:6379> lrange marks1 0 2\par
+1) "30"\par
+2) "31"\par
+3) "32"\par
+127.0.0.1:6379> linsert marks1 before 31 30.5\par
+(integer) 4\par
+127.0.0.1:6379> lrange marks1 0 3\par
+1) "30"\par
+2) "30.5"\par
+3) "31"\par
+4) "32"\par
+127.0.0.1:6379> lpop marks1\par
+"30"\par
+127.0.0.1:6379> rpop marks1\par
+"32"\par
+127.0.0.1:6379> lrange marks1 0 1\par
+1) "30.5"\par
+2) "31"\par
+127.0.0.1:6379> RPUSH namelist ram sham gana\par
+(integer) 3\par
+ 127.0.0.1:6379> LRANGE namelist 0 2\par
+1) "ram"\par
+2) "sham"\par
+3) "gana"\par
+127.0.0.1:6379> lindex namelist 0\par
+"ram"\par
+\par
+\par
+\cf4\b\i 4.set (help @set)\b0\i0\par
+\cf0\par
+127.0.0.1:6379> sadd fruits apple banana mango\par
+(integer) 3\par
+127.0.0.1:6379> sadd fruits banana\par
+(integer) 0\par
+127.0.0.1:6379> smembers fruits\par
+1) "mango"\par
+2) "apple"\par
+3) "banana"\par
+127.0.0.1:6379> sismember fruits mango\par
+(integer) 1\par
+127.0.0.1:6379> srem fruits banana\par
+(integer) 1\par
+127.0.0.1:6379> scard fruits\par
+(integer) 2\par
+127.0.0.1:6379> spop fruits\par
+"mango"\par
+127.0.0.1:6379> scard fruits\par
+(integer) 1\par
+127.0.0.1:6379> smembers fruits\par
+1) "apple"\par
+127.0.0.1:6379> SADD set1 a b c\par
+(integer) 3\par
+127.0.0.1:6379> SADD set2 b c d\par
+(integer) 3\par
+127.0.0.1:6379> SINTER set1 set2\par
+1) "c"\par
+2) "b"\par
+127.0.0.1:6379> SUNION set1 set2\par
+1) "a"\par
+2) "c"\par
+3) "b"\par
+4) "d"\par
+127.0.0.1:6379> SDIFF set1 set2\par
+1) "a"\par
+127.0.0.1:6379> DEL fruits\par
+(integer) 1\par
+127.0.0.1:6379>\par
+\par
+\b\fs28 step1\b0\fs22\par
+
+\pard\box\brdrdash\brdrw0 \sa200\sl276\slmult1\cf1\f2\fs20 <dependency>\line\tab <groupId>org.springframework.boot</groupId>\line\tab <artifactId>spring-boot-starter-data-redis</artifactId>\line </dependency>\par
+
+\pard\sa200\sl276\slmult1\f0\fs40\par
+
+\pard\sa200\sl276\slmult1\cf0\b\fs28 step2\cf1\b0\fs20\line\f2 spring.data.redis.host=localhost         #127.0.0.1\line spring.data.redis.port=6379\par
+
+\pard\sa200\sl276\slmult1\f0\fs40\par
+\par
+
+\pard\box\brdrdash\brdrw0 \sa200\sl276\slmult1\cf0\b\fs28 step3\cf1\b0\fs20\line\f2 @Bean\line public RedisConnectionFactory redisConnectionFactory()\{\line\line     return new LettuceConnectionFactory();\line\}\line\line\line @Bean\line public RedisTemplate<String,Object>redisTemplate()\{\line\line     RedisTemplate<String,Object> redisTemplate = new RedisTemplate<>();\line\line     //1.connectionfactory\line     redisTemplate.setConnectionFactory(redisConnectionFactory());\line\line     //2.key serializer\line     redisTemplate.setKeySerializer(new StringRedisSerializer());\line\line     //3.value serializer\line     redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());\line\line\line     return redisTemplate;\line\}\par
+
+\pard\sa200\sl276\slmult1\f0\fs40\par
+\par
+\par
+
+\pard\box\brdrdash\brdrw0 \sa200\sl276\slmult1\cf0\b\fs28 step4\cf1\b0\fs20\line\f2 @Service\line //@CacheConfig(cacheNames = "users")  // Common cache name for all methods\line public class UserService \{\line\line     private static final String \i CACHE_NAME \i0 = "users";\line\line     @Autowired\line     private UserDao userDao;\line\line     @Cacheable(value = \i CACHE_NAME\i0 ,key = "#userId")\line     public User getUser(String userId) \{\line         return userDao.getUser(userId); // hit Redis manually only if not in cache\line     \}\line\line     @CachePut(value = \i CACHE_NAME\i0 , key = "#user.userId")\line     public User save(User user) \{\line         return userDao.save(user); // update cache\line     \}\line\line     @CacheEvict(value = \i CACHE_NAME\i0 , key = "#userId")\line     public void delete(String userId) \{\line         userDao.delete(userId); // remove from cache too\line     \}\line\line     @CachePut(value = \i CACHE_NAME\i0 , key = "#userId")\line     public User update(String userId, User user) \{\line         return userDao.updateUser(userId, user);\line     \}\line\line     @Cacheable(value = \i CACHE_NAME\i0 )\line     public List<User> findAllUsers() \{\line         return userDao.findAllUsers();\line     \}\line\line\}\par
+
+\pard\sa200\sl276\slmult1\f0\fs40\par
+\par
+\cf0\b\fs28 step5\cf1\b0\fs40\par
+
+\pard\box\brdrdash\brdrw0 \sa200\sl276\slmult1\f2\fs20 @Repository\line public class UserDao \{\line\line     @Autowired\line     private RedisTemplate<String,Object> redisTemplate;\line\line     private static final String \i KEY \i0 = "USER";  //object store under this key (user)\line\line     //save user\line     public User save(User user)\{\line\line         //because we storing data in key val pair that's y we use opsForHash().put(KEY,key,val)\line         redisTemplate.opsForHash().put(\i KEY\i0 ,user.getUserId(),user);\line         return user;\line     \}\line\line     //getUser\line     public User getUser(String userId)\{\line         //because we fetching data in key val pair that's y we use opsForHash().get(KEY,key)\line         return (User) redisTemplate.opsForHash().get(\i KEY\i0 ,userId);\line\line     \}\line\line     //findAll\line     public List<User> findAllUsers() \{\line         Map<Object, Object> userMap = redisTemplate.opsForHash().entries(\i KEY\i0 );\line         return userMap.values().stream()\line                 .map(obj -> (User) obj)\line                 .collect(Collectors.\i toList\i0 ());\line     \}\line\line\line     //delete\line     public void delete(String userId)\{\line         redisTemplate.opsForHash().delete(\i KEY\i0 ,userId);\line     \}\line\line\line     //update\line     public User updateUser(String userId,User user)\{\line         User getUser = (User) redisTemplate.opsForHash().get(\i KEY\i0 ,userId);\line         if (getUser == null) \{\line             throw new RuntimeException("User not found");\line         \}\line         getUser.setName(user.getName());\line\line         redisTemplate.opsForHash().put(\i KEY\i0 ,userId,getUser);\line         return getUser;\line     \}\par
+
+\pard\sa200\sl276\slmult1\f0\fs40\par
+}
+ 
