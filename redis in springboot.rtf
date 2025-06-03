@@ -1,0 +1,250 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset1 Cambria Math;}}
+{\colortbl ;\red155\green0\blue211;\red0\green0\blue255;}
+{\*\generator Riched20 10.0.17134}{\*\mmathPr\mmathFont1\mwrapIndent1440 }\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9 Step : Add Dependencies in pom.xml\par
+\par
+<dependencies>\par
+    <!-- Spring Boot Starter Web -->\par
+    <dependency>\par
+        <groupId>org.springframework.boot</groupId>\par
+        <artifactId>spring-boot-starter-web</artifactId>\par
+    </dependency>\par
+\par
+    <!-- Spring Data JPA -->\par
+    <dependency>\par
+        <groupId>org.springframework.boot</groupId>\par
+        <artifactId>spring-boot-starter-data-jpa</artifactId>\par
+    </dependency>\par
+\par
+    <!-- H2 DB for testing -->\par
+    <dependency>\par
+        <groupId>com.h2database</groupId>\par
+        <artifactId>h2</artifactId>\par
+        <scope>runtime</scope>\par
+    </dependency>\par
+\par
+    <!-- Spring Cache -->\cf1\par
+    <dependency>\par
+        <groupId>org.springframework.boot</groupId>\par
+        <artifactId>spring-boot-starter-cache</artifactId>\par
+    </dependency>\par
+\cf0\par
+\cf1     <!-- Spring Data Redis -->\par
+    <dependency>\par
+        <groupId>org.springframework.boot</groupId>\par
+        <artifactId>spring-boot-starter-data-redis</artifactId>\par
+    </dependency>\par
+\cf0\par
+    <!-- Lombok (optional) -->\par
+    <dependency>\par
+        <groupId>org.projectlombok</groupId>\par
+        <artifactId>lombok</artifactId>\par
+        <optional>true</optional>\par
+    </dependency>\par
+</dependencies>\par
+\par
+\par
+\par
+Step 3: Configure Redis and Cache in application.properties\par
+# Server port\par
+server.port=8080\par
+\par
+# H2 config\par
+spring.datasource.url=jdbc:h2:mem:testdb\par
+spring.datasource.driverClassName=org.h2.Driver\par
+spring.datasource.username=sa\par
+spring.datasource.password=\par
+\par
+# JPA\par
+spring.jpa.hibernate.ddl-auto=update\par
+spring.jpa.show-sql=true\par
+\par
+\cf1 # Redis config\par
+spring.redis.host=localhost\par
+spring.redis.port=6379\par
+\par
+# Enable caching\par
+spring.cache.type=redis\par
+\cf0\par
+\par
+Step : Enable Caching in your main Application class\par
+import org.springframework.boot.SpringApplication;\par
+import org.springframework.boot.autoconfigure.SpringBootApplication;\par
+import org.springframework.cache.annotation.EnableCaching;\par
+\par
+@SpringBootApplication\par
+\cf1 @EnableCaching  // <-- Enable Spring cache abstraction\par
+\cf0 public class RedisCacheDemoApplication \{\par
+    public static void main(String[] args) \{\par
+        SpringApplication.run(RedisCacheDemoApplication.class, args);\par
+    \}\par
+\}\par
+\par
+\par
+Step 5: Create Entity Class\par
+import jakarta.persistence.Entity;\par
+import jakarta.persistence.Id;\par
+import jakarta.persistence.Table;\par
+import lombok.AllArgsConstructor;\par
+import lombok.Data;\par
+import lombok.NoArgsConstructor;\par
+\par
+@Entity\par
+@Table(name = "accounts")\par
+@Data\par
+@NoArgsConstructor\par
+@AllArgsConstructor\par
+public class BankAccount \{\par
+\par
+    @Id\par
+    private String id;\par
+    private String accountHolderName;\par
+    private double balance;\par
+\}\par
+\par
+Step : Create JPA Repository\par
+import org.springframework.data.jpa.repository.JpaRepository;\par
+\par
+public interface BankAccountRepository extends JpaRepository<BankAccount, String> \{\par
+\}\par
+\par
+\par
+Step 7: Create Service Layer with Spring Cache Annotations\par
+import org.springframework.cache.annotation.CacheEvict;\par
+import org.springframework.cache.annotation.CachePut;\par
+import org.springframework.cache.annotation.Cacheable;\par
+import org.springframework.stereotype.Service;\par
+\par
+import java.util.List;\par
+\par
+@Service\par
+public class BankAccountService \{\par
+\par
+    private final BankAccountRepository repository;\par
+\par
+    public BankAccountService(BankAccountRepository repository) \{\par
+        this.repository = repository;\par
+    \}\par
+\par
+\cf1     @Cacheable(value = "accounts", key = "#id")\par
+\cf0     public BankAccount getAccountById(String id) \{\par
+        System.out.println("Cache MISS - fetching from DB for id: " + id);\par
+        return repository.findById(id).orElse(null);\par
+    \}\par
+\par
+\cf1     @CachePut(value = "accounts", key = "#account.id")\par
+\cf0     public BankAccount createOrUpdateAccount(BankAccount account) \{\par
+        System.out.println("Updating DB and Cache for id: " + account.getId());\par
+        return repository.save(account);\par
+    \}\par
+\par
+\cf1     @CacheEvict(value = "accounts", key = "#id")\par
+\cf0     public void deleteAccount(String id) \{\par
+        System.out.println("Deleting DB and evicting cache for id: " + id);\par
+        repository.deleteById(id);\par
+    \}\par
+\par
+    public List<BankAccount> getAllAccounts() \{\par
+        return repository.findAll();\par
+    \}\par
+\}\par
+\par
+\par
+Step 8: Create Controller Layer\par
+import org.springframework.http.ResponseEntity;\par
+import org.springframework.web.bind.annotation.*;\par
+\par
+import java.util.List;\par
+\par
+@RestController\par
+@RequestMapping("/api/accounts")\par
+public class BankAccountController \{\par
+\par
+    private final BankAccountService service;\par
+\par
+    public BankAccountController(BankAccountService service) \{\par
+        this.service = service;\par
+    \}\par
+\par
+    @GetMapping("/\{id\}")\par
+    public ResponseEntity<BankAccount> getAccountById(@PathVariable String id) \{\par
+        BankAccount account = service.getAccountById(id);\par
+        if (account == null) \{\par
+            return ResponseEntity.notFound().build();\par
+        \}\par
+        return ResponseEntity.ok(account);\par
+    \}\par
+\par
+    @PostMapping\par
+    public ResponseEntity<BankAccount> createAccount(@RequestBody BankAccount account) \{\par
+        BankAccount saved = service.createOrUpdateAccount(account);\par
+        return ResponseEntity.ok(saved);\par
+    \}\par
+\par
+    @PutMapping("/\{id\}")\par
+    public ResponseEntity<BankAccount> updateAccount(@PathVariable String id, @RequestBody BankAccount account) \{\par
+        account.setId(id);\par
+        BankAccount updated = service.createOrUpdateAccount(account);\par
+        return ResponseEntity.ok(updated);\par
+    \}\par
+\par
+    @DeleteMapping("/\{id\}")\par
+    public ResponseEntity<Void> deleteAccount(@PathVariable String id) \{\par
+        service.deleteAccount(id);\par
+        return ResponseEntity.noContent().build();\par
+    \}\par
+\par
+    @GetMapping\par
+    public ResponseEntity<List<BankAccount>> getAllAccounts() \{\par
+        return ResponseEntity.ok(service.getAllAccounts());\par
+    \}\par
+\}\par
+\par
+\par
+Step 9: Run Redis Server Locally\par
+Make sure Redis is installed and running on your machine on default port 6379.\par
+If not installed, you can download it here: {{\field{\*\fldinst{HYPERLINK https://redis.io/download }}{\fldrslt{https://redis.io/download\ul0\cf0}}}}\f0\fs22\par
+\par
+Run it before starting your Spring Boot app.\par
+\par
+Step 10: Run the Application and Test\par
+Start Spring Boot app\par
+\par
+Use Postman or curl to test endpoints:\par
+\par
+Create account (POST /api/accounts)\par
+\{\par
+  "id": "123",\par
+  "accountHolderName": "John Doe",\par
+  "balance": 1000\par
+\}\par
+Get account (GET /api/accounts/123)\par
+\par
+The first call will print:\par
+Cache MISS - fetching from DB for id: 123\par
+\par
+Subsequent calls will return data from Redis cache without printing this line.\par
+\par
+Update account (PUT /api/accounts/123)\par
+\par
+Updates both DB and cache.\par
+\par
+Delete account (DELETE /api/accounts/123)\par
+\par
+Removes from DB and evicts cache.\par
+\par
+How Cache works internally:\par
+@Cacheable:\par
+On method call, Spring checks Redis for key accounts::id (e.g., accounts::123).\par
+\par
+If exists \f1\u8594?\f0  return cached data\par
+\par
+If not \f1\u8594?\f0  call DB, cache result, then return\par
+\par
+@CachePut:\par
+Always calls method, updates DB and cache with new value.\par
+\par
+@CacheEvict:\par
+Removes key from cache on delete.\lang9\par
+}
+ 
